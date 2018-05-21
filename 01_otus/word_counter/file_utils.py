@@ -3,6 +3,7 @@ import os
 
 
 def get_trees(_path):
+    """Returns list of AST trees"""
     trees = []
 
     filenames = get_files(_path)
@@ -21,6 +22,7 @@ def get_trees(_path):
 
 
 def get_files(_path):
+    """Returns list of python files"""
     filenames = []
 
     for dirname, dirs, files in os.walk(_path, topdown=True):
@@ -34,6 +36,7 @@ def get_files(_path):
 
 
 def parse_file(file_content):
+    """Parse the source into AST tree"""
     try:
         tree = ast.parse(file_content)
     except SyntaxError as e:

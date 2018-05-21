@@ -8,6 +8,7 @@ def flatten_list(_list):
 
 
 def is_verb(word):
+    """Checks if the word is verb"""
     if not word:
         return False
     pos_info = pos_tag([word])

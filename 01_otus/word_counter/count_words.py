@@ -7,6 +7,7 @@ from file_utils import get_trees
 
 
 def get_all_words_in_path(path):
+    """Returns list of all words"""
     trees = [t for t in get_trees(path) if t]
     function_names = [f for f in flatten_list([get_all_names(t) for t in trees]) if not (f.startswith('__') and f.endswith('__'))]
 
@@ -19,17 +20,19 @@ def get_all_names(tree):
     return [node.id for node in ast.walk(tree) if isinstance(node, ast.Name)]
 
 
-def get_top_verbs_in_path(path, top_size=10):
+def get_verbs_in_path(path):
+    """Returns list of all verbs"""
     trees = [t for t in get_trees(path) if t]
     list_of_nodes = get_nodes(trees)
     fncs = get_function_names(list_of_nodes)
     print('%s functions extracted' % len(fncs))
 
     verbs = flatten_list([get_verbs_from_function_name(function_name) for function_name in fncs])
-    return collections.Counter(verbs).most_common(top_size)
+    return verbs
 
 
 def get_nodes(trees):
+    """Gets all function nodes"""
     list_of_nodes = []
     for t in trees:
         nodes = [node.name.lower() for node in ast.walk(t) if isinstance(node, ast.FunctionDef)]
@@ -40,11 +43,18 @@ def get_nodes(trees):
 
 
 def get_function_names(list_of_nodes):
+    """Returns all function names except names of 'magic' methods"""
     return [f for f in flatten_list(list_of_nodes) if not (f.startswith('__') and f.endswith('__'))]
 
 
 def get_verbs_from_function_name(function_name):
+    """Splits function name by underscore and returns list of verbs"""
     return [word for word in function_name.split('_') if is_verb(word)]
+
+
+def print_top_verbs(wds, top_size=200):
+    for word, occurence in collections.Counter(wds).most_common(top_size):
+        print(word, occurence)
 
 
 def main(dir_path='.'):
@@ -54,12 +64,10 @@ def main(dir_path='.'):
     for project in projects:
         path = os.path.join(dir_path, project)
         print('+++scanning in %s+++' % path)
-        wds += get_top_verbs_in_path(path)
+        wds += get_verbs_in_path(path)
 
-    top_size = 200
     print('total %s words, %s unique' % (len(wds), len(set(wds))))
-    for word, occurence in collections.Counter(wds).most_common(top_size):
-        print(word, occurence)
+    print_top_verbs(wds)
 
 
 if __name__ == '__main__':
