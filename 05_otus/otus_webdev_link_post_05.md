@@ -7,3 +7,7 @@
 - [What is the difference between a framework and a library?](https://stackoverflow.com/questions/148747/)
 - [Flask by Example](https://www.youtube.com/watch?v=FGrIyBDQLPg)
 - [Web programming from the beginning](https://www.youtube.com/watch?v=a77fm3qdyj8)
+
+
+## ДЗ
+Сделать сайт каталогов товаров. Со страницей списка товаров и страницей одного товара. Использовать Flask.

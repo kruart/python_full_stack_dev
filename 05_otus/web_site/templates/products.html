@@ -1,0 +1,9 @@
+<!doctype html>
+<title>Products</title>
+<link rel=stylesheet type=text/css>
+<div class=page>
+    <h1>Flaskr</h1>
+        {% for item in products %}
+            Product is: {{item.id}}, {{item.name}}, {{item.description}}<br>
+        {% endfor %}
+</div>
