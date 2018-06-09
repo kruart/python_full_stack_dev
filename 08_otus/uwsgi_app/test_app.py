@@ -11,7 +11,7 @@ class App:
         if url in self.handlers:
             handler = self.handlers[url]
         else:
-            handler = not_found_handler
+            handler = App.not_found_handler
 
         status_code, extra_headers, response_content = handler(environ)
         headers = {
@@ -28,6 +28,11 @@ class App:
             self.handlers[url] = handler
         return wrapper
 
+    @staticmethod
+    def not_found_handler(environ):
+        response_content = 'Not found'
+        return 404, {}, response_content
+
 
 application = App()
 
@@ -42,8 +47,3 @@ def index_page_handler(environ):
 def info_page_handler(environ):
     response_content = 'Hello world from a simple WSGI application'
     return 200, {}, response_content
-
-
-def not_found_handler(environ):
-    response_content = 'Not found'
-    return 404, {}, response_content
