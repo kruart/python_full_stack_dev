@@ -2,7 +2,6 @@ import http.client
 
 
 class App:
-
     def __init__(self):
         self.handlers = {}
 
@@ -22,29 +21,29 @@ class App:
         start_response('%s %s' % (status_code, http.client.responses[status_code]),
                        list(headers.items()),
                        )
-        return [response_content]
+        return [response_content.encode('utf-8')]
 
-    def add_handler(self, url, handler):
-        self.handlers[url] = handler
+    def add_handler(self, url):
+        def wrapper(handler):
+            self.handlers[url] = handler
+        return wrapper
 
 
 application = App()
 
 
-def info_page_handler(environ):
-    response_content = b'Hello world from a simple WSGI application'
+@application.add_handler('/')
+def index_page_handler(environ):
+    response_content = 'Index'
     return 200, {}, response_content
 
 
-def index_page_handler(environ):
-    response_content = b'Index'
+@application.add_handler('/info/')
+def info_page_handler(environ):
+    response_content = 'Hello world from a simple WSGI application'
     return 200, {}, response_content
 
 
 def not_found_handler(environ):
-    response_content = b'Not found'
+    response_content = 'Not found'
     return 404, {}, response_content
-
-
-application.add_handler('/', index_page_handler)
-application.add_handler('/info/', info_page_handler)
