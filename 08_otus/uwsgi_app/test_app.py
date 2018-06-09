@@ -3,15 +3,14 @@ import http.client
 
 class App:
 
-    def __call__(self, environ, start_response):
+    def __init__(self):
+        self.handlers = {}
 
+    def __call__(self, environ, start_response):
         url = environ['PATH_INFO']
-        handlers = {
-            '/info/': info_page_handler,
-            '/': index_page_handler
-        }
-        if url in handlers:
-            handler = handlers[url]
+
+        if url in self.handlers:
+            handler = self.handlers[url]
         else:
             handler = not_found_handler
 
@@ -24,6 +23,9 @@ class App:
                        list(headers.items()),
                        )
         return [response_content]
+
+    def add_handler(self, url, handler):
+        self.handlers[url] = handler
 
 
 application = App()
@@ -42,3 +44,7 @@ def index_page_handler(environ):
 def not_found_handler(environ):
     response_content = b'Not found'
     return 404, {}, response_content
+
+
+application.add_handler('/', index_page_handler)
+application.add_handler('/info/', info_page_handler)
