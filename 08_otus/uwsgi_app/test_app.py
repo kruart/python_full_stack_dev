@@ -7,9 +7,12 @@ class App:
 
     def __call__(self, environ, start_response):
         url = environ['PATH_INFO']
+        method = environ['REQUEST_METHOD']
 
         if url in self.handlers:
-            handler = self.handlers[url]
+            allowed_methods, handler = self.handlers[url]
+            if method not in allowed_methods:
+                handler = App.not_allowed_handler
         else:
             handler = App.not_found_handler
 
@@ -23,9 +26,11 @@ class App:
                        )
         return [response_content.encode('utf-8')]
 
-    def add_handler(self, url):
+    def add_handler(self, url, methods=None):
+        methods = methods or ['GET']
+
         def wrapper(handler):
-            self.handlers[url] = handler
+            self.handlers[url] = methods, handler
         return wrapper
 
     @staticmethod
@@ -33,11 +38,16 @@ class App:
         response_content = 'Not found'
         return 404, {}, response_content
 
+    @staticmethod
+    def not_allowed_handler(environ):
+        response_content = 'Not allowed'
+        return 405, {}, response_content
+
 
 application = App()
 
 
-@application.add_handler('/')
+@application.add_handler('/', methods=['GET', 'POST'])
 def index_page_handler(environ):
     response_content = 'Index'
     return 200, {}, response_content
