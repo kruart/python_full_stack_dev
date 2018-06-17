@@ -1,4 +1,5 @@
 import http.client
+import json
 
 
 class App:
@@ -20,8 +21,13 @@ class App:
                 handler = App.not_found_handler
 
         status_code, extra_headers, response_content = handler(environ)
+        content_type = 'text/plain'
+        if not type(response_content) is str:
+            response_content = json.dumps(response_content)
+            content_type = 'text/json'
+
         headers = {
-            'Content-Type': 'text/plain'
+            'Content-Type': content_type
         }
         headers.update(extra_headers)
         start_response('%s %s' % (status_code, http.client.responses[status_code]),
@@ -57,11 +63,9 @@ application = App()
 
 @application.add_handler('/', methods=['GET', 'POST'])
 def index_page_handler(environ):
-    response_content = 'Index'
-    return 200, {}, response_content
+    return 200, {}, 'Index'
 
 
 @application.add_handler('/info/')
 def info_page_handler(environ):
-    response_content = 'Hello world from a simple WSGI application'
-    return 200, {}, response_content
+    return 200, {}, {'user_ip': environ['REMOTE_ADDR']}
