@@ -9,12 +9,15 @@ class App:
         url = environ['PATH_INFO']
         method = environ['REQUEST_METHOD']
 
-        if url in self.handlers:
-            allowed_methods, handler = self.handlers[url]
-            if method not in allowed_methods:
-                handler = App.not_allowed_handler
+        if not url.endswith('/'):
+            handler = App.no_trailing_slash_handler
         else:
-            handler = App.not_found_handler
+            if url in self.handlers:
+                allowed_methods, handler = self.handlers[url]
+                if method not in allowed_methods:
+                    handler = App.not_allowed_handler
+            else:
+                handler = App.not_found_handler
 
         status_code, extra_headers, response_content = handler(environ)
         headers = {
@@ -42,6 +45,11 @@ class App:
     def not_allowed_handler(environ):
         response_content = 'Not allowed'
         return 405, {}, response_content
+
+    @staticmethod
+    def no_trailing_slash_handler(environ):
+        response_content = 'Redirect to url with trailing slash'
+        return 301, {'Location': '%s/' % environ['PATH_INFO']}, response_content
 
 
 application = App()
