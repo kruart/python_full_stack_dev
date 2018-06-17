@@ -1,5 +1,6 @@
 import http.client
 import json
+import re
 
 
 class App:
@@ -10,17 +11,9 @@ class App:
         url = environ['PATH_INFO']
         method = environ['REQUEST_METHOD']
 
-        if not url.endswith('/'):
-            handler = App.no_trailing_slash_handler
-        else:
-            if url in self.handlers:
-                allowed_methods, handler = self.handlers[url]
-                if method not in allowed_methods:
-                    handler = App.not_allowed_handler
-            else:
-                handler = App.not_found_handler
+        handler, url_args = self.get_handler(url, method)
 
-        status_code, extra_headers, response_content = handler(environ)
+        status_code, extra_headers, response_content = handler(environ, url_args)
         content_type = 'text/plain'
         if not type(response_content) is str:
             response_content = json.dumps(response_content)
@@ -35,6 +28,25 @@ class App:
                        )
         return [response_content.encode('utf-8')]
 
+    def get_handler(self, url, method):
+        handler = None
+        url_args = None
+
+        if not url.endswith('/'):
+            handler = App.no_trailing_slash_handler
+        else:
+            for url_regexp, (current_method, current_handler) in self.handlers.items():
+                match = re.match(url_regexp, url)
+                if match is None:
+                    continue
+                url_args = match.groupdict()
+                handler = current_handler
+                break
+
+            if handler is None:
+                handler = App.not_found_handler
+        return handler, url_args
+
     def add_handler(self, url, methods=None):
         methods = methods or ['GET']
 
@@ -43,17 +55,17 @@ class App:
         return wrapper
 
     @staticmethod
-    def not_found_handler(environ):
+    def not_found_handler(environ, url_args):
         response_content = 'Not found'
         return 404, {}, response_content
 
     @staticmethod
-    def not_allowed_handler(environ):
+    def not_allowed_handler(environ, url_args):
         response_content = 'Not allowed'
         return 405, {}, response_content
 
     @staticmethod
-    def no_trailing_slash_handler(environ):
+    def no_trailing_slash_handler(environ, url_args):
         response_content = 'Redirect to url with trailing slash'
         return 301, {'Location': '%s/' % environ['PATH_INFO']}, response_content
 
@@ -61,11 +73,16 @@ class App:
 application = App()
 
 
-@application.add_handler('/', methods=['GET', 'POST'])
-def index_page_handler(environ):
+@application.add_handler(r'^/$', methods=['GET', 'POST'])
+def index_page_handler(environ, url_args):
     return 200, {}, 'Index'
 
 
-@application.add_handler('/info/')
-def info_page_handler(environ):
+@application.add_handler(r'^/info/$')
+def info_page_handler(environ, url_args):
     return 200, {}, {'user_ip': environ['REMOTE_ADDR']}
+
+
+@application.add_handler(r'^/lessons/(?P<lesson_id>\d+)/$')
+def get_lesson_handler(environ, url_args):
+    return 200, {}, {'lesson_id': url_args['lesson_id']}
