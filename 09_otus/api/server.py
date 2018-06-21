@@ -6,16 +6,14 @@ from db import PRODUCTS
 app = Flask(__name__)
 
 
-@app.route('/products/')
+@app.route('/products/', methods=['GET', 'POST'])
 def list_products_handle():
-    return jsonify(PRODUCTS)
-
-
-@app.route('/product/', methods=['POST'])
-def add_product_handle():
-    raw_product = json.loads(request.data.decode('utf-8'))
-    PRODUCTS.append(raw_product)
-    return jsonify(raw_product)
+    if request.method == 'GET':
+        return jsonify(PRODUCTS)
+    else:
+        raw_product = json.loads(request.data.decode('utf-8'))
+        PRODUCTS.append(raw_product)
+        return jsonify(raw_product)
 
 
 if __name__ == '__main__':
