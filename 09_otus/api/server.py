@@ -9,7 +9,11 @@ app = Flask(__name__)
 @app.route('/products/', methods=['GET', 'POST'])
 def list_products_handle():
     if request.method == 'GET':
-        return jsonify(PRODUCTS)
+        query = request.args.get('q')
+        products_to_show = PRODUCTS
+        if query:
+            products_to_show = [p for p in PRODUCTS if query.lower() in p['title'].lower()]
+        return jsonify(products_to_show)
     else:
         raw_product = json.loads(request.data.decode('utf-8'))
         PRODUCTS.append(raw_product)
