@@ -17,6 +17,11 @@ def list_products_handle():
         filter_field = request.args.get('filter')
         if filter_field:
             products_to_show = [p for p in products_to_show if p.get(filter_field)]
+
+        from_element = int(request.args.get('from'))
+        to_element = int(request.args.get('to'))
+        if from_element and to_element or from_element == 0:
+            products_to_show = products_to_show[from_element:to_element]
         return jsonify(products_to_show)
     else:
         raw_product = json.loads(request.data.decode('utf-8'))
