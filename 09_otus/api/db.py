@@ -19,3 +19,8 @@ PRODUCTS = [
         "in_store": False
     }
 ]
+
+
+API_KEYS = {
+    '123qwe': 'admin'
+}

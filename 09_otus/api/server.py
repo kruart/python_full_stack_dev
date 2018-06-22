@@ -1,10 +1,11 @@
 import json
 
 from flask import Flask, jsonify, request
-from db import PRODUCTS
+from db import PRODUCTS, API_KEYS
 from marshmallow import Schema, fields
 
 app = Flask(__name__)
+
 
 class ProductSchema(Schema):
     title = fields.Str(required=True)
@@ -15,6 +16,11 @@ class ProductSchema(Schema):
 
 @app.route('/products/', methods=['GET', 'POST'])
 def list_products_handle():
+    api_key = request.headers.get('HTTP-X-API-KEY')
+    if api_key not in API_KEYS:
+        response = jsonify({'error': 'Wrong API key'})
+        response.status_code = 400
+        return response
     if request.method == 'GET':
         query = request.args.get('q')
         products_to_show = PRODUCTS
