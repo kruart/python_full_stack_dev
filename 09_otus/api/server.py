@@ -2,8 +2,15 @@ import json
 
 from flask import Flask, jsonify, request
 from db import PRODUCTS
+from marshmallow import Schema, fields
 
 app = Flask(__name__)
+
+class ProductSchema(Schema):
+    title = fields.Str(required=True)
+    price_uah = fields.Integer(required=True)
+    product_image = fields.Str(required=False)
+    in_store = fields.Boolean(default=False)
 
 
 @app.route('/products/', methods=['GET', 'POST'])
@@ -33,8 +40,15 @@ def list_products_handle():
         return jsonify(products_to_show)
     else:
         raw_product = json.loads(request.data.decode('utf-8'))
-        PRODUCTS.append(raw_product)
-        return jsonify(raw_product)
+        clean_product, errors = ProductSchema().load(raw_product)
+        if errors:
+            response = jsonify(errors)
+            response.status_code = 400
+            return response
+
+        else:
+            PRODUCTS.append(clean_product)
+            return jsonify(raw_product)
 
 
 if __name__ == '__main__':
