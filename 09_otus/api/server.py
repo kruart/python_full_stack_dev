@@ -5,6 +5,8 @@ from db import PRODUCTS, API_KEYS
 from marshmallow import Schema, fields
 
 app = Flask(__name__)
+RATE_LIMITS_INFO = {}
+MAX_REQUESTS_PER_USER = 100
 
 
 class ProductSchema(Schema):
@@ -14,13 +16,20 @@ class ProductSchema(Schema):
     in_store = fields.Boolean(default=False)
 
 
-@app.route('/products/', methods=['GET', 'POST'])
+@app.route('/v1/products/', methods=['GET', 'POST'])
 def list_products_handle():
     api_key = request.headers.get('HTTP-X-API-KEY')
     if api_key not in API_KEYS:
         response = jsonify({'error': 'Wrong API key'})
         response.status_code = 400
         return response
+
+    RATE_LIMITS_INFO[api_key] = RATE_LIMITS_INFO.get(api_key, 0) + 1
+    if RATE_LIMITS_INFO[api_key] > MAX_REQUESTS_PER_USER:
+        response = jsonify({'error': 'Rate limit exceeded'})
+        response.status_code = 400
+        return response
+
     if request.method == 'GET':
         query = request.args.get('q')
         products_to_show = PRODUCTS
