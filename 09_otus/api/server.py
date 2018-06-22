@@ -18,10 +18,18 @@ def list_products_handle():
         if filter_field:
             products_to_show = [p for p in products_to_show if p.get(filter_field)]
 
-        from_element = int(request.args.get('from'))
-        to_element = int(request.args.get('to'))
+        from_element = request.args.get('from')
+        to_element = request.args.get('to')
         if from_element and to_element or from_element == 0:
+            from_element = int(from_element)
+            to_element = int(to_element)
             products_to_show = products_to_show[from_element:to_element]
+
+        fields = request.args.get('fields')
+        if fields:
+            fields = fields.split(',')
+            products_to_show = [{k: v for k, v in p.items() if k in fields} for p in products_to_show]
+
         return jsonify(products_to_show)
     else:
         raw_product = json.loads(request.data.decode('utf-8'))
