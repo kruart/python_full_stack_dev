@@ -7,6 +7,7 @@ from posts import views as posts_views
 
 router = DefaultRouter()
 router.register(r'posts', posts_views.PostViewSet)
+router.register(r'tags', posts_views.TagViewSet)
 
 urlpatterns = [
 	url(r'^api/', include(router.urls)),
