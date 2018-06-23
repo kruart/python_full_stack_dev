@@ -8,6 +8,12 @@ class PostViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.PostSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
+    def get_queryset(self, *args, **kwargs):
+        return models.Post.objects.filter(
+            is_published=True,
+            user=self.request.user
+        )
+
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = models.Tag.objects.all()
