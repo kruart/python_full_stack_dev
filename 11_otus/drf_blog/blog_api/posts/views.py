@@ -4,7 +4,7 @@ from . import models
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = models.Post.objects.all()
+    queryset = models.Post.objects.filter(is_published=True)
     serializer_class = serializers.PostSerializer
 
 
