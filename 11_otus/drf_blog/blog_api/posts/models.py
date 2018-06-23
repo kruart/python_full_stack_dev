@@ -5,7 +5,7 @@ class Post(models.Model):
     slug = models.SlugField(max_length=256)
     text = models.TextField()
     is_published = models.BooleanField(default=False)
-    user = models.ForeignKey('auth.User')
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
 
     tags = models.ManyToManyField('Tag', blank=True)
 
